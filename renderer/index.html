@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+<title>教师请假管理系统</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+          <path d="M3 10h18M8 3v4M16 3v4"></path>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong>教师请假管理</strong>
+        <span>本地单机版</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+        <span>首页</span>
+        <em class="nav-badge" id="navBadge" hidden>0</em>
+      </button>
+      <button class="nav-item" data-view="list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><circle cx="3.5" cy="6" r="1.2"></circle><circle cx="3.5" cy="12" r="1.2"></circle><circle cx="3.5" cy="18" r="1.2"></circle></svg>
+        <span>数据总览</span>
+      </button>
+      <button class="nav-item" data-view="teachers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 5.2a3.2 3.2 0 0 1 0 6.1"></path><path d="M18 14.4c2 .9 3.3 2.9 3.3 5.1"></path></svg>
+        <span>教师档案</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"></path></svg>
+        <span>设置</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button class="ghost-btn" id="btnOpenData">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        数据文件夹
+      </button>
+      <span class="ver" id="verText"></span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">首页</h1>
+        <p class="sub" id="pageSub"></p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="btnAdd">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          新增请假
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <section class="view active" id="view-home">
+        <div class="panel onboard" id="onboard" hidden></div>
+        <div class="stats" id="statCards"></div>
+
+        <div class="panel" id="panelAlert">
+          <div class="panel-head">
+            <h2>未销假提醒</h2>
+            <span class="pill" id="alertCount">0 条</span>
+            <span class="head-hint">点卡片可查看/编辑，还没结束的也会列在这里</span>
+            <div class="panel-tools">
+              <select id="alertSchool" title="按学校筛选"><option value="">全部学校</option></select>
+              <select id="alertType" title="按请假类型筛选"><option value="">全部类型</option></select>
+              <select id="alertLevel" title="按紧急程度筛选">
+                <option value="">全部程度</option>
+                <option value="critical">超期较久</option>
+                <option value="warn">待跟进</option>
+                <option value="today">今日到期</option>
+              </select>
+              <input type="text" id="alertSearch" placeholder="搜索姓名" autocomplete="off">
+            </div>
+          </div>
+          <div class="panel-body" id="alertList"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>今日在假</h2>
+            <span class="pill pill-blue" id="todayCount">0 人</span>
+            <span class="head-hint">点卡片可查看/编辑</span>
+            <div class="panel-tools">
+              <select id="todaySchool" title="按学校筛选"><option value="">全部学校</option></select>
+              <select id="todaySubject" title="按学科筛选"><option value="">全部学科</option></select>
+              <select id="todayGroup" title="分组方式">
+                <option value="school">按学校分组</option>
+                <option value="subject">按学科分组</option>
+                <option value="none">不分组</option>
+              </select>
+              <input type="text" id="todaySearch" placeholder="搜索姓名" autocomplete="off">
+            </div>
+          </div>
+          <div class="panel-body" id="todayList"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-list">
+        <div class="panel">
+          <div class="filters">
+            <div class="field">
+              <label>学校</label>
+              <select id="fSchool"><option value="">全部学校</option></select>
+            </div>
+            <div class="field">
+              <label>教师姓名</label>
+              <input type="text" id="fName" list="nameList" placeholder="模糊搜索" autocomplete="off">
+              <datalist id="nameList"></datalist>
+            </div>
+            <div class="field">
+              <label>学科</label>
+              <select id="fFilterSubject"><option value="">全部学科</option></select>
+            </div>
+            <div class="field">
+              <label>请假类型</label>
+              <select id="fType"><option value="">全部类型</option></select>
+            </div>
+            <div class="field">
+              <label>状态</label>
+              <select id="fStatus">
+                <option value="">全部状态</option>
+                <option value="active">进行中</option>
+                <option value="pending">待销假</option>
+                <option value="checked">已销假</option>
+                <option value="revoked">已撤销</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>开始日期从</label>
+              <input type="date" id="fFrom">
+            </div>
+            <div class="field">
+              <label>至</label>
+              <input type="date" id="fTo">
+            </div>
+            <div class="field">
+              <label>代课</label>
+              <select id="fSub">
+                <option value="">不限</option>
+                <option value="1">已安排</option>
+                <option value="0">未安排</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-ghost" id="btnReset">重置</button>
+              <button class="btn btn-ghost" id="btnQuickTerm">本学期</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="list-bar">
+            <div class="list-summary" id="listSummary"></div>
+            <div class="list-actions">
+              <button class="btn btn-ghost" id="btnExport">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 20h16"></path></svg>
+                导出 Excel
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort="name">教师姓名</th>
+                  <th class="sortable" data-sort="school">学校</th>
+                  <th>学科</th>
+                  <th>年级</th>
+                  <th>类型</th>
+                  <th class="sortable" data-sort="startDate">请假区间</th>
+                  <th class="sortable num" data-sort="days">天数</th>
+                  <th>代课</th>
+                  <th class="sortable" data-sort="status">状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span id="pageInfo"></span>
+            <div class="pager-btns">
+              <select id="pageSize">
+                <option value="20">每页 20 条</option>
+                <option value="50">每页 50 条</option>
+                <option value="100">每页 100 条</option>
+              </select>
+              <button class="btn btn-ghost" id="btnPrev">上一页</button>
+              <button class="btn btn-ghost" id="btnNext">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-teachers">
+        <div id="tOverview">
+          <div class="panel">
+            <div class="filters">
+              <div class="field">
+                <label>学校</label>
+                <select id="tSchool"><option value="">全部学校</option></select>
+              </div>
+              <div class="field">
+                <label>学科</label>
+                <select id="tSubject"><option value="">全部学科</option></select>
+              </div>
+              <div class="field">
+                <label>统计范围</label>
+                <select id="tRange">
+                  <option value="">全部时间</option>
+                  <option value="term">本学期</option>
+                  <option value="year">本学年</option>
+                  <option value="month">本月</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </div>
+              <div class="field" id="tFromField" hidden>
+                <label>从</label>
+                <input type="date" id="tFrom">
+              </div>
+              <div class="field" id="tToField" hidden>
+                <label>至</label>
+                <input type="date" id="tTo">
+              </div>
+              <div class="field">
+                <label>当前状态</label>
+                <select id="tState">
+                  <option value="">全部教师</option>
+                  <option value="active">正在请假</option>
+                  <option value="pending">有待销假</option>
+                  <option value="idle">已全部销假</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>教师姓名</label>
+                <input type="text" id="tName" placeholder="模糊搜索" autocomplete="off">
+              </div>
+              <div class="field">
+                <label>排序</label>
+                <select id="tSort">
+                  <option value="days">累计天数最多</option>
+                  <option value="count">请假次数最多</option>
+                  <option value="last">最近请假在前</option>
+                  <option value="name">按姓名</option>
+                </select>
+              </div>
+              <div class="filter-actions">
+                <button class="btn btn-ghost" id="tReset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="list-bar">
+              <div class="list-summary" id="tSummary"></div>
+              <span class="note-inline">同一位教师以「姓名 + 学校」识别，改校名会视为另一位教师</span>
+            </div>
+            <div class="panel-body" id="tList"></div>
+          </div>
+        </div>
+
+        <div id="tDetail" hidden></div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="panel">
+          <div class="panel-head"><h2>提醒阈值</h2></div>
+          <div class="panel-body">
+            <p class="group-label">已确定结束日期的请假</p>
+            <div class="settings-row">
+              <div class="field">
+                <label>黄色提醒（已结束满多少天）</label>
+                <input type="number" id="setWarn" min="0" max="60" step="1">
+              </div>
+              <div class="field">
+                <label>红色置顶（已结束满多少天）</label>
+                <input type="number" id="setCritical" min="1" max="120" step="1">
+              </div>
+            </div>
+            <p class="group-label">结束日期未定的请假（按已请天数）</p>
+            <div class="settings-row">
+              <div class="field">
+                <label>黄色提醒（已请满多少天仍未销假）</label>
+                <input type="number" id="setOpenWarn" min="1" max="365" step="1">
+              </div>
+              <div class="field">
+                <label>红色置顶（已请满多少天仍未销假）</label>
+                <input type="number" id="setOpenCritical" min="2" max="365" step="1">
+              </div>
+            </div>
+            <p class="hint">只影响首页提醒的分级与排序，不改变历史数据。固定结束日期的请假当天到期记为"今日到期"，归入黄色区。</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>学校</h2>
+            <span class="pill" id="schoolCount">0 所</span>
+          </div>
+          <div class="panel-body">
+            <div class="chips" id="schoolChips"></div>
+            <div class="settings-row">
+              <div class="field grow">
+                <label>新增学校</label>
+                <input type="text" id="newSchool" placeholder="如：第三中学" maxlength="30">
+              </div>
+              <button class="btn btn-ghost" id="btnAddSchool">添加</button>
+            </div>
+            <p class="hint">这里维护的学校会出现在「新增请假」下拉框里，至少保留一所。<strong>已被请假记录使用的学校不能删除</strong>，需先把这些记录的学校改到其他学校；标签上的数字表示有多少条记录在用。虚线标签表示有记录在用、但它不在上面的列表里，点后面的 <b>+</b> 可一键补入。</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>请假类型</h2></div>
+          <div class="panel-body">
+            <div class="chips" id="typeChips"></div>
+            <div class="settings-row">
+              <div class="field grow">
+                <label>新增类型</label>
+                <input type="text" id="newType" placeholder="如：工伤假" maxlength="8">
+              </div>
+              <button class="btn btn-ghost" id="btnAddType">添加</button>
+            </div>
+            <p class="hint">删除类型不会影响已有记录，历史记录仍保留原类型名称。</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>学科与年级</h2></div>
+          <div class="panel-body">
+            <p class="group-label">学科</p>
+            <div class="chips" id="subjectChips"></div>
+            <div class="settings-row">
+              <div class="field grow">
+                <label>新增学科</label>
+                <input type="text" id="newSubject" placeholder="如：书法" maxlength="10">
+              </div>
+              <button class="btn btn-ghost" id="btnAddSubject">添加</button>
+            </div>
+
+            <p class="group-label">年级</p>
+            <div class="chips" id="gradeChips"></div>
+            <div class="settings-row">
+              <div class="field grow">
+                <label>新增年级</label>
+                <input type="text" id="newGrade" placeholder="如：预科班" maxlength="10">
+              </div>
+              <button class="btn btn-ghost" id="btnAddGrade">添加</button>
+            </div>
+            <p class="hint">这两份选项供录入时下拉选择，可随时增删。已有记录里的学科、年级不受影响。</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>数据与备份</h2></div>
+          <div class="panel-body">
+            <div class="kv">
+              <span>数据文件夹</span>
+              <code id="dataPath"></code>
+            </div>
+            <div class="data-stats" id="dataStats"></div>
+            <div class="settings-row">
+              <div class="field">
+                <label>备份保留份数</label>
+                <select id="setBackupKeep">
+                  <option value="10">保留最近 10 份</option>
+                  <option value="20">保留最近 20 份</option>
+                  <option value="30">保留最近 30 份</option>
+                  <option value="50">保留最近 50 份</option>
+                  <option value="100">保留最近 100 份</option>
+                </select>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost" id="btnBackupNow">立即备份一份</button>
+                <button class="btn btn-ghost" id="btnOpenBackup">打开备份文件夹</button>
+                <button class="btn btn-ghost" id="btnOpenData2">打开数据文件夹</button>
+              </div>
+            </div>
+            <p class="hint">
+              每次保存记录前会自动备份一份完整数据；点「立即备份一份」是手动备份。
+              自动备份保留最近若干份，手动备份单独保留同样份数、不会被随后的自动备份挤掉，
+              所以备份不会无限增长。下面每一条都写着里面有多少条记录、哪些教师，
+              <b>恢复前先核对条数</b>，别挑到删除之后的那份。
+              备份只是数据文件的副本，一条记录约 0.3&nbsp;KB —— 就算录满 1 万条记录，
+              数据文件也只有 3&nbsp;MB 左右。整个文件夹可以直接拷贝到其他电脑继续使用。
+            </p>
+            <div class="backup-list" id="backupList"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-mask"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitle">新增请假</h3>
+      <button class="icon-btn" id="modalClose">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-inline danger" id="overlapWarn" hidden></div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>学校 <em>*</em></label>
+          <select id="fFormSchool"></select>
+        </div>
+        <div class="field">
+          <label>教师姓名 <em>*</em></label>
+          <input type="text" id="fFormName" list="formNameList" placeholder="输入姓名" autocomplete="off">
+          <datalist id="formNameList"></datalist>
+          <div class="field-note" id="nameDupNote" hidden></div>
+        </div>
+        <div class="field">
+          <label>学科 <em>*</em></label>
+          <select id="fFormSubject"></select>
+        </div>
+        <div class="field">
+          <label>年级</label>
+          <select id="fFormGrade"><option value="">不指定</option></select>
+        </div>
+        <div class="field">
+          <label>联系电话</label>
+          <input type="text" id="fFormPhone" placeholder="选填" maxlength="20">
+        </div>
+        <div class="field">
+          <label>请假类型 <em>*</em></label>
+          <select id="fFormType"></select>
+        </div>
+        <div class="field">
+          <label>开始日期 <em>*</em></label>
+          <input type="date" id="fFormStart">
+        </div>
+        <div class="field">
+          <label>开始时段</label>
+          <select id="fFormStartHalf"><option value="am">上午</option><option value="pm">下午</option></select>
+        </div>
+        <div class="field">
+          <label>结束日期 <em id="endReqMark">*</em></label>
+          <input type="date" id="fFormEnd">
+        </div>
+        <div class="field">
+          <label>结束时段</label>
+          <select id="fFormEndHalf"><option value="am">上午</option><option value="pm">下午</option></select>
+        </div>
+      </div>
+
+      <div class="alert-inline danger" id="schoolWarn" hidden>
+        <span id="schoolWarnText">还没有可用的学校，无法保存记录。</span>
+        <button class="link-btn" id="btnGoSchool">去设置里添加学校</button>
+      </div>
+
+      <label class="check check-openend">
+        <input type="checkbox" id="fFormOpenEnd">
+        <span>结束日期未定（按实际返校销假当天结算，天数先按今天累计）</span>
+      </label>
+
+      <div class="calc-bar">
+        <span>请假天数</span>
+        <strong id="daysPreview">0 天</strong>
+        <span class="calc-note" id="calcNote"></span>
+      </div>
+
+      <div class="field">
+        <label>事由</label>
+        <textarea id="fFormReason" rows="2" placeholder="简述请假原因，选填" maxlength="200"></textarea>
+      </div>
+
+      <div class="check-row">
+        <label class="check">
+          <input type="checkbox" id="fFormSub">
+          <span>已安排代课 / 调课</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="fFormChecked">
+          <span>已销假（补录以前的请假时勾选）</span>
+          <em class="check-hint" id="checkedNote" hidden>不会出现在首页提醒</em>
+        </label>
+      </div>
+
+      <div class="field">
+        <label>备注</label>
+        <input type="text" id="fFormRemark" placeholder="选填" maxlength="100">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="foot-left">
+        <span class="modal-no" id="modalNo"></span>
+        <button class="link-btn danger" id="btnFormDelete" hidden>删除这条记录</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btnCancel">取消</button>
+        <button class="btn btn-primary" id="btnSave">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="confirmModal" hidden>
+  <div class="modal-mask"></div>
+  <div class="modal-box small">
+    <div class="modal-head">
+      <h3 id="confirmTitle">确认</h3>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" id="confirmText"></p>
+    </div>
+    <div class="modal-foot right">
+      <button class="btn btn-ghost" id="confirmCancel">取消</button>
+      <button class="btn btn-danger" id="confirmOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="firstRun" hidden>
+  <div class="modal-mask"></div>
+  <div class="modal-box small">
+    <div class="modal-head">
+      <h3>第一次打开，会碰上一个 Windows 提示</h3>
+    </div>
+    <div class="modal-body">
+      <p class="tip-text">
+        如果双击「教师请假系统.exe」时，Windows 弹出蓝色的「Windows 已保护你的电脑」，
+        发布者显示为「未知」——这不是病毒。原因是本软件没有购买 Windows 数字签名证书
+        （证书只用于消除这条提示，不影响软件功能）。本软件不联网、不上传任何数据，
+        记录只保存在本文件夹的 data 里。
+      </p>
+      <ol class="tip-steps">
+        <li>点窗口里的「更多信息」</li>
+        <li>再点「仍要运行」</li>
+      </ol>
+      <p class="tip-text">
+        同一台电脑只需设置一次，以后双击就能直接打开。
+        如果把整个文件夹拷到另一台电脑，那台电脑会再问一次。
+      </p>
+    </div>
+    <div class="modal-foot right">
+      <button class="btn btn-primary" id="firstRunOk">知道了</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="../common/logic.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

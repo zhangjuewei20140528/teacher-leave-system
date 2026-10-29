@@ -1,0 +1,53 @@
+{
+  "name": "teacher-leave-system",
+  "version": "2.1.1",
+  "description": "教师请假管理系统 - 本地单机版",
+  "main": "electron/main.js",
+  "author": "local",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win dir --config.directories.output=dist",
+    "test": "node --test test/logic.test.js test/store.test.js",
+    "zip": "node tools/make-zip.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "exceljs": "^4.4.0"
+  },
+  "build": {
+    "appId": "com.local.teacherleave",
+    "productName": "教师请假系统",
+    "asar": true,
+    "electronLanguages": [
+      "zh-CN",
+      "en-US"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "common/**/*",
+      "vendor/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    }
+  }
+}
